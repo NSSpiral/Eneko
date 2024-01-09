@@ -92,6 +92,37 @@ static void SBIconController_adjustFrame(SBIconController* self, SEL _cmd) {
 
 #pragma mark - Manangement class hooks
 
+void fadePlayer(AVPlayerLayer *playerLayer, float opacity, NSTimeInterval duration);
+void fadePlayer(AVPlayerLayer *playerLayer, float opacity, NSTimeInterval duration) {
+    if(playerLayer.opacity != opacity) {
+        if (playerLayer.animationKeys.count > 0) {
+            playerLayer.opacity = [playerLayer.presentationLayer opacity];
+        }
+        [CATransaction begin];
+        [CATransaction setAnimationDuration:duration];
+        playerLayer.opacity = opacity;
+        [CATransaction commit];
+    }
+}
+
+void playVideo(AVPlayerLayer *playerLayer);
+void playVideo(AVPlayerLayer *playerLayer) {
+    if(!playerLayer) return;
+
+    fadePlayer(playerLayer, 1.0, 0.2);
+    AVPlayer *player = playerLayer.player;
+    [player play];
+}
+
+void pauseVideo(AVPlayerLayer *playerLayer);
+void pauseVideo(AVPlayerLayer *playerLayer) {
+    if(!playerLayer) return;
+
+    fadePlayer(playerLayer, 0.0, 0.2);
+    AVPlayer *player = playerLayer.player;
+    [player pause];
+}
+
 static void (* orig_CSCoverSheetViewController_viewWillAppear)(CSCoverSheetViewController* self, SEL _cmd, BOOL animated);
 static void override_CSCoverSheetViewController_viewWillAppear(CSCoverSheetViewController* self, SEL _cmd, BOOL animated) {
     orig_CSCoverSheetViewController_viewWillAppear(self, _cmd, animated);
@@ -104,7 +135,7 @@ static void override_CSCoverSheetViewController_viewWillAppear(CSCoverSheetViewC
 
     if (lockScreenPlayer) {
         [self adjustFrame];
-        [lockScreenPlayer play];
+        playVideo(lockScreenPlayerLayer);
     }
 
     if (homeScreenPlayer && isHomeScreenVisible) {
@@ -123,7 +154,7 @@ static void override_CSCoverSheetViewController_viewWillDisappear(CSCoverSheetVi
     }
 
     if (lockScreenPlayer) {
-        [lockScreenPlayer pause];
+        pauseVideo(lockScreenPlayerLayer);
     }
 
     if (homeScreenPlayer && isHomeScreenVisible) {
@@ -147,7 +178,7 @@ static void override_SBIconController_viewWillAppear(SBIconController* self, SEL
     }
 
     if (lockScreenPlayer && isLockScreenVisible) {
-        [lockScreenPlayer pause];
+        pauseVideo(lockScreenPlayerLayer);
     }
 }
 
@@ -166,7 +197,7 @@ static void override_SBIconController_viewWillDisappear(SBIconController* self, 
     }
 
     if (lockScreenPlayer && isLockScreenVisible) {
-        [lockScreenPlayer play];
+        playVideo(lockScreenPlayerLayer);
     }
 }
 
@@ -179,7 +210,7 @@ static void override_CCUIModularControlCenterOverlayViewController_viewWillAppea
     }
 
     if (lockScreenPlayer && isLockScreenVisible) {
-        [lockScreenPlayer pause];
+        pauseVideo(lockScreenPlayerLayer);
     }
 
     if (homeScreenPlayer && isHomeScreenVisible) {
@@ -196,7 +227,7 @@ static void override_CCUIModularControlCenterOverlayViewController_viewWillDisap
     }
 
     if (lockScreenPlayer && isLockScreenVisible) {
-        [lockScreenPlayer play];
+        playVideo(lockScreenPlayerLayer);
     }
 
     if (homeScreenPlayer && isHomeScreenVisible) {
@@ -220,7 +251,7 @@ static void override_SBBacklightController_turnOnScreenFullyWithBacklightSource(
     }
 
     if (lockScreenPlayer) {
-        [lockScreenPlayer play];
+        playVideo(lockScreenPlayerLayer);
     }
 
     if (homeScreenPlayer) {
@@ -235,7 +266,7 @@ static void override_SBLockScreenManager_lockUIFromSource_withOptions(SBLockScre
     isScreenOn = NO;
 
     if (lockScreenPlayer) {
-        [lockScreenPlayer pause];
+        pauseVideo(lockScreenPlayerLayer);
     }
 
     if (homeScreenPlayer) {
@@ -293,7 +324,7 @@ static int override_TUCall_status(TUCall* self, SEL _cmd) {
         isInCall = YES;
 
         if (lockScreenPlayer) {
-            [lockScreenPlayer pause];
+            pauseVideo(lockScreenPlayerLayer);
         }
 
         if (homeScreenPlayer) {
@@ -304,7 +335,7 @@ static int override_TUCall_status(TUCall* self, SEL _cmd) {
 
         if (isLockScreenVisible && !isHomeScreenVisible) {
             if (lockScreenPlayer) {
-                [lockScreenPlayer play];
+                playVideo(lockScreenPlayerLayer);
             }
 
             if (homeScreenPlayer) {
@@ -316,7 +347,7 @@ static int override_TUCall_status(TUCall* self, SEL _cmd) {
             }
 
             if (lockScreenPlayer) {
-                [lockScreenPlayer pause];
+                pauseVideo(lockScreenPlayerLayer);
             }
         }
     }
@@ -348,7 +379,7 @@ static void override_SBDashBoardCameraPageViewController_viewWillAppear(SBDashBo
     }
 
     if (lockScreenPlayer && isLockScreenVisible) {
-        [lockScreenPlayer pause];
+        pauseVideo(lockScreenPlayerLayer);
     }
 
     isLockScreenVisible = NO;
@@ -365,7 +396,7 @@ static void override_SBDashBoardCameraPageViewController_viewWillDisappear(SBDas
     }
 
     if (lockScreenPlayer && isLockScreenVisible) {
-        [lockScreenPlayer play];
+        playVideo(lockScreenPlayerLayer);
     }
 }
 
@@ -375,7 +406,7 @@ static void override_CSModalButton_didMoveToWindow(CSModalButton* self, SEL _cmd
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         if (lockScreenPlayer) {
-            [lockScreenPlayer pause];
+            pauseVideo(lockScreenPlayerLayer);
         }
 
         if (homeScreenPlayer) {
@@ -390,7 +421,7 @@ static void override_CSModalButton_removeFromSuperview(CSModalButton* self, SEL 
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         if (lockScreenPlayer) {
-            [lockScreenPlayer play];
+            playVideo(lockScreenPlayerLayer);
         }
 
         if (homeScreenPlayer) {
@@ -406,7 +437,7 @@ static void override_SBLockScreenEmergencyCallViewController_viewWillAppear(SBLo
     isLockScreenVisible = NO;
 
     if (lockScreenPlayer) {
-        [lockScreenPlayer pause];
+        pauseVideo(lockScreenPlayerLayer);
     }
 }
 
@@ -421,7 +452,7 @@ static void override_SBLockScreenEmergencyCallViewController_viewWillDisappear(S
     }
 
     if (lockScreenPlayer) {
-        [lockScreenPlayer play];
+        playVideo(lockScreenPlayerLayer);
     }
 }
 
