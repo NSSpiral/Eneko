@@ -5,7 +5,7 @@ Live wallpapers for iOS (Serotonin, palera1n)
 <img src="Preview.png" alt="Preview" />
 
 ## Installation
-1. Download the latest `deb` from the [releases](https://github.com/Traurige/Eneko/releases)
+1. Download the latest `deb` from the [releases](https://github.com/NSSpiral/Eneko/releases)
 2. Install Eneko
 
 ## Compatibility
