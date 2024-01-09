@@ -1,5 +1,5 @@
 # Eneko
-Live wallpapers for iOS
+Live wallpapers for iOS (Serotonin, palera1n)
 
 ## Preview
 <img src="Preview.png" alt="Preview" />
